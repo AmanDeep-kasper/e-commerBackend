@@ -44,32 +44,32 @@ app.use(
   }),
 );
 
-app.post("/create-payment-intent", async (req, res) => {
-  try {
-    let { amount } = req.body;
+// app.post("/create-payment-intent", async (req, res) => {
+//   try {
+//     let { amount } = req.body;
 
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ error: "Invalid payment amount" });
-    }
+//     if (!amount || amount <= 0) {
+//       return res.status(400).json({ error: "Invalid payment amount" });
+//     }
 
-    // Stripe accepts only integer amount in paise
-    // const stripeAmount = Math.round(amount * 100);
+//     // Stripe accepts only integer amount in paise
+//     // const stripeAmount = Math.round(amount * 100);
 
-    // if (stripeAmount < 100) {
-    //   return res.status(400).json({ error: "Amount must be at least ₹1.00" });
-    // }
+//     // if (stripeAmount < 100) {
+//     //   return res.status(400).json({ error: "Amount must be at least ₹1.00" });
+//     // }
 
-    // const paymentIntent = await stripe.paymentIntents.create({
-    //   amount: stripeAmount,
-    //   currency: "inr",
-    // });
+//     // const paymentIntent = await stripe.paymentIntents.create({
+//     //   amount: stripeAmount,
+//     //   currency: "inr",
+//     // });
 
-    res.json({ clientSecret: paymentIntent.client_secret });
-  } catch (err) {
-    console.error("Stripe Error:", err);
-    res.status(500).json({ error: "Stripe error occurred" });
-  }
-});
+//     res.json({ clientSecret: paymentIntent.client_secret });
+//   } catch (err) {
+//     console.error("Stripe Error:", err);
+//     res.status(500).json({ error: "Stripe error occurred" });
+//   }
+// });
 
 // Static uploads directory
 app.use("/uploads", express.static("uploads"));
