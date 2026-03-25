@@ -3,7 +3,7 @@ import {
   getUserDetails,
   updateUserDetails,
   updateUserEmail,
-  updateUserProfileImage
+  updateUserProfileImage,
 } from "../controllers/userController.js";
 import { isAuthenticated } from "../middlewares/authMiddleware.js";
 
