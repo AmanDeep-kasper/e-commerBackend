@@ -28,7 +28,7 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "http://192.168.1.7:5174",
+  "https://e-commerbackend-5.onrender.com",
 ];
 app.use(
   cors({
@@ -90,6 +90,4 @@ app.get("/", (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`),
-);
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
