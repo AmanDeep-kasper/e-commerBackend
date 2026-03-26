@@ -6,9 +6,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
-// import Stripe from "stripe";
 
-// Import route files
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
@@ -22,59 +20,32 @@ connectDB();
 
 const app = express();
 app.use(cookieParser());
-
-// Middleware must be at top
 app.use(express.json());
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
+  "https://lasercut.kasperinfotech.org",
   "https://e-commerbackend-5.onrender.com",
 ];
+
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error(`CORS blocked for origin: ${origin}`));
       }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  }),
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
 );
 
-// app.post("/create-payment-intent", async (req, res) => {
-//   try {
-//     let { amount } = req.body;
-
-//     if (!amount || amount <= 0) {
-//       return res.status(400).json({ error: "Invalid payment amount" });
-//     }
-
-//     // Stripe accepts only integer amount in paise
-//     // const stripeAmount = Math.round(amount * 100);
-
-//     // if (stripeAmount < 100) {
-//     //   return res.status(400).json({ error: "Amount must be at least ₹1.00" });
-//     // }
-
-//     // const paymentIntent = await stripe.paymentIntents.create({
-//     //   amount: stripeAmount,
-//     //   currency: "inr",
-//     // });
-
-//     res.json({ clientSecret: paymentIntent.client_secret });
-//   } catch (err) {
-//     console.error("Stripe Error:", err);
-//     res.status(500).json({ error: "Stripe error occurred" });
-//   }
-// });
-
-// Static uploads directory
 app.use("/uploads", express.static("uploads"));
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/addresses", addressRoutes);
@@ -83,11 +54,9 @@ app.use("/api/products", productRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/categories", categoryRoutes);
 
-// Health check
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
