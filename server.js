@@ -6,7 +6,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
-import Stripe from "stripe";
+// import Stripe from "stripe";
 
 // Import route files
 import authRoutes from "./routes/authRoutes.js";
