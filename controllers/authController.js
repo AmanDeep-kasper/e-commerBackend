@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+// import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import dotenv from "dotenv";
 import { sendOTPEmail } from "../utils/sendEmail.js";

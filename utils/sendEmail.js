@@ -13,6 +13,11 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 10000,
 });
 
+transporter
+  .verify()
+  .then(() => console.log("✅ SMTP ready"))
+  .catch((err) => console.error("❌ SMTP verify failed:", err));
+
 export const sendOTPEmail = async (email, otp, name = "User") => {
   await transporter.sendMail({
     from: `"LazerCut" <${process.env.EMAIL_USER}>`,
