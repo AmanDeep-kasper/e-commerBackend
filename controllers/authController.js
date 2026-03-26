@@ -4,6 +4,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import dotenv from "dotenv";
+import { sendOTPEmail } from "../utils/sendEmail.js";
 // import cookieParser from "cookie-parser";
 dotenv.config();
 
@@ -38,24 +39,19 @@ export const registerUser = async (req, res) => {
 
     if (!name || !email || !password) {
       return res.status(400).json({
-        message: "Name,Email and Password is required",
+        message: "Name, Email and Password is required",
       });
     }
 
-    // Prevent duplicate
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const otpExpires = Date.now() + 10 * 60 * 1000;
 
-    // Create user in unverified state
     const user = new User({
       name,
       email,
@@ -66,30 +62,32 @@ export const registerUser = async (req, res) => {
       emailVerificationExpires: otpExpires,
       isVerified: false,
     });
+
     await user.save();
 
-    // Send OTP via email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    try {
+      await sendOTPEmail(email, otp, name);
+    } catch (mailError) {
+      console.error("OTP mail failed:", mailError);
 
-    const mailOptions = {
-      from: `"LazerCut" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your verification OTP",
-      html: `<p>Hi ${name},</p><p>Your signup OTP is <strong>${otp}</strong>. It expires in 10 minutes.</p> <p>So Just Now...</p>`,
-    };
-    await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: "OTP sent to email", email });
+      await User.deleteOne({ _id: user._id });
+
+      return res.status(500).json({
+        message: "Could not send OTP email",
+        error: mailError.message,
+      });
+    }
+
+    return res.status(200).json({
+      message: "OTP sent to email",
+      email,
+    });
   } catch (error) {
     console.error("registerUser error:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 };
 
