@@ -1,31 +1,44 @@
-import nodemailer from "nodemailer";
+// import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  // service: 'Gmail',
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
-});
+// const transporter = nodemailer.createTransport({
+//   service: 'Gmail',
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   },
+// });
 
-transporter
-  .verify()
-  .then(() => console.log("✅ SMTP ready"))
-  .catch((err) => console.error("❌ SMTP verify failed:", err));
+// export const sendOTPEmail = async (email, otp) => {
+//   const mailOptions = {
+//     from: process.env.EMAIL_USER,
+//     to: email,
+//     subject: 'OTP for Email Verification',
+//     html: `<h3>Your OTP is: <strong>${otp}</strong></h3>`,
+//   };
 
-export const sendOTPEmail = async (email, otp) => {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
+//   await transporter.sendMail(mailOptions);
+// };
+
+
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export const sendOTPEmail = async (email, name, otp) => {
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM,
+    to: [email],
     subject: "OTP for Email Verification",
-    html: `<h3>Your OTP is: <strong>${otp}</strong></h3>`,
-  };
+    html: `
+      <p>Hi ${name},</p>
+      <h3>Your OTP is: <strong>${otp}</strong></h3>
+      <p>This OTP expires in 10 minutes.</p>
+    `,
+  });
 
-  await transporter.sendMail(mailOptions);
+  if (error) {
+    throw new Error(error.message || "Failed to send OTP email");
+  }
+
+  return data;
 };
