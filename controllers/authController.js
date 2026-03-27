@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-// import nodemailer from "nodemailer";
-import { sendOTPEmail } from "../utils/sendOTPEmail.js";
+import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import dotenv from "dotenv";
+import { sendMail } from "../nodemailer/test-email.js";
 // import cookieParser from "cookie-parser";
 dotenv.config();
 
@@ -30,71 +30,6 @@ const generateRefreshToken = (user) => {
   );
 };
 
-// export const registerUser = async (req, res) => {
-//   try {
-//     const name = req.body.name?.trim();
-//     const email = req.body.email?.trim().toLowerCase();
-//     const password = req.body.password;
-//     const profileImage = req.file ? req.file.filename : null;
-
-//     if (!name || !email || !password) {
-//       return res.status(400).json({
-//         message: "Name,Email and Password is required",
-//       });
-//     }
-
-//     // Prevent duplicate
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ message: "User already exists" });
-//     }
-
-//     // Hash password
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     // Generate OTP
-//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-//     const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-//     // Create user in unverified state
-//     const user = new User({
-//       name,
-//       email,
-//       password: hashedPassword,
-//       role: "user",
-//       profileImage,
-//       emailVerificationOTP: otp,
-//       emailVerificationExpires: otpExpires,
-//       isVerified: false,
-//     });
-//     await user.save();
-
-//     // Send OTP via email
-//     const transporter = nodemailer.createTransport({
-//       service: "gmail",
-//       auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASS,
-//       },
-//     });
-
-//     const mailOptions = {
-//       from: `"LazerCut" <${process.env.EMAIL_USER}>`,
-//       to: email,
-//       subject: "Your verification OTP",
-//       html: `<p>Hi ${name},</p><p>Your signup OTP is <strong>${otp}</strong>. It expires in 10 minutes.</p> <p>So Just Now...</p>`,
-//     };
-//     // await transporter.sendMail(mailOptions);
-//     await sendOTPEmail(email, name, otp);
-//     return res.status(200).json({ message: "OTP sent to email", email });
-//   } catch (error) {
-//     console.error("registerUser error:", error);
-//     return res
-//       .status(500)
-//       .json({ message: "Server error", error: error.message });
-//   }
-// };
-
 export const registerUser = async (req, res) => {
   try {
     const name = req.body.name?.trim();
@@ -119,7 +54,7 @@ export const registerUser = async (req, res) => {
 
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = Date.now() + 10 * 60 * 1000;
+    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
     // Create user in unverified state
     const user = new User({
@@ -132,42 +67,26 @@ export const registerUser = async (req, res) => {
       emailVerificationExpires: otpExpires,
       isVerified: false,
     });
-
     await user.save();
 
-    // Send OTP via Resend
-    // const finalEmail =
-    //   process.env.DEV_EMAIL_OVERRIDE === "true" ? process.env.DEV_EMAIL : email;
+    const mailOptions = {
+      from: `"LazerCut" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your verification OTP",
+      html: `<p>Hi ${name},</p><p>Your signup OTP is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
+    };
 
-    // console.log("User entered:", email);
-    // console.log("OTP sent to:", finalEmail);
-    // console.log("OTP:", otp);
+    await sendMail(mailOptions);
 
-    // await sendOTPEmail(finalEmail, name, otp);
-
-    // test and dev mode use
-    const finalEmail =
-      process.env.DEV_EMAIL_OVERRIDE === "true" ? process.env.DEV_EMAIL : email;
-
-    console.log("User entered:", email);
-    console.log("OTP sent to:", finalEmail);
-    console.log("OTP:", otp);
-
-    await sendOTPEmail(finalEmail, name, otp);
-
-    return res.status(200).json({
-      message: "OTP sent to email",
-      email,
-    });
+    return res.status(200).json({ message: "OTP sent to email", email });
   } catch (error) {
     console.error("registerUser error:", error);
-
-    return res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
+
 export const loginUser = async (req, res) => {
   try {
     const email = req.body.email?.trim().toLowerCase();

@@ -1,12 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import dns from "node:dns";
 dns.setServers(["1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4"]);
 
-
-import dotenv from "dotenv";
-dotenv.config();
 import express from "express";
 import cors from "cors";
-// import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 
@@ -17,7 +16,6 @@ import addressRoutes from "./routes/addressRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
-import { sendOTPEmail } from "./utils/sendOTPEmail.js";
 
 // dotenv.config();
 connectDB();
@@ -25,11 +23,8 @@ connectDB();
 const app = express();
 app.use(cookieParser());
 
-sendOTPEmail("your-email@gmail.com", "Aman", "123456")
-  .then(() => console.log("Email sent successfully"))
-  .catch((err) => console.error("Email failed:", err));
 
-  // Middleware must be at top
+// Middleware must be at top
 app.use(express.json());
 
 const allowedOrigins = [
@@ -55,6 +50,9 @@ app.use(
 );
 
 app.use("/uploads", express.static("uploads"));
+
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "Loaded" : "Missing");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
